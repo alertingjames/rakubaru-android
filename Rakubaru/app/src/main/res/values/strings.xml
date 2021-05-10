@@ -1,0 +1,210 @@
+<resources>
+    <string name="app_name">らくポス</string>
+    <string name="location_points">location_points</string>
+    <string name="forgot_password_title">パスワードをお忘れですか</string>
+    <string name="forgot_password_question">パスワードをお忘れですか？</string>
+    <string name="forgot_password_text">パスワードのリセット\nリンクをメールに送信します。</string>
+    <string name="email_address">メールアドレス</string>
+    <string name="submit">送信</string>
+    <string name="login_title">ログイン</string>
+    <string name="login">ログイン</string>
+    <string name="password">パスワード</string>
+    <string name="my_profile">プロフィール</string>
+    <string name="my_email">私のメール</string>
+    <string name="full_name">氏名</string>
+    <string name="enter_name">あなたの名前を入力してください。</string>
+    <string name="phone_number">電話番号</string>
+    <string name="reset_password">パスワードをリセット</string>
+    <string name="reset_password_title">パスワードをリセット</string>
+    <string name="save">保存</string>
+    <string name="old_password">既存のパスワード</string>
+    <string name="new_password">新しいパスワード</string>
+    <string name="confirm_password">パスワードの確認</string>
+    <string name="no">いや</string>
+    <string name="yes">はい</string>
+    <string name="we_sent_password_reset_link">パスワードリセットのリンクをメールでお送りしました。 チェックしてください。</string>
+    <string name="you_no_registered">登録されていません。</string>
+    <string name="something_wrong">何かが間違っている</string>
+    <string name="invalid_email">無効なメール</string>
+    <string name="invalid_phone">無効な電話番号</string>
+    <string name="incorrect_password">パスワードが間違っています。</string>
+    <string name="already_loggedin">すでに別の電話からログインしています。 別の電話で同時にログインすることはできません。</string>
+    <string name="profile_updated">アカウントが正常に更新されました。</string>
+    <string name="start">開始</string>
+    <string name="end">終了</string>
+    <string name="logout">ログアウト</string>
+    <string name="logging_out">ログアウトしています</string>
+    <string name="my_reports">過去ログ</string>
+    <string name="saved_history">過去ログ（全件）</string>
+    <string name="settings">設定</string>
+    <string name="my_location">現在地</string>
+    <string name="keep_my_location">現在地を常に中心にする</string>
+    <string name="map_view">マップビュー</string>
+    <string name="satellite_mode">衛星モード</string>
+    <string name="miles">マイル</string>
+    <string name="stick_pin">ピンを刺す</string>
+    <string name="add_comment_pin">ここにコメントを追加。。。</string>
+    <string name="ok">確認</string>
+    <string name="report_port">自動的に報告する</string>
+    <string name="save_rowhen_save">保管時報告する</string>
+    <string name="auto_reute">保存時報告する</string>
+    <string name="write_something_optional">メモ（オプション）</string>
+    <string name="route_name">ルート名</string>
+    <string name="enter_route_name">ルート名を入力してください</string>
+    <string name="report_when_save">保存時報告する</string>
+    <string name="auto_report">保存と同時に報告する</string>
+    <string name="search">検索。。。</string>
+    <string name="no_saved_history">保存された履歴はありません。。。</string>
+    <string name="no_reports">レポートはありません。。。</string>
+    <string name="saved">保存された</string>
+    <string name="successfully_sent">正常に送信されました！</string>
+    <string name="delete">削除</string>
+    <string name="deleted">正常に削除されました</string>
+    <string name="report">レポート</string>
+    <string name="warning">警告!</string>
+    <string name="sure_delete_data">このデータを削除しますか？</string>
+    <string name="save_route">パスを保存する</string>
+    <string name="add_route_desc">ルートに説明を追加します。</string>
+    <string name="enable_location">ロケーションを有効にする</string>
+    <string name="please_enabled_in_settings_menu">場所の設定が有効になっていません。 設定メニューで有効にしてください。</string>
+    <string name="location_setting">場所の設定</string>
+    <string name="cancel">キャンセル</string>
+    <string name="edit_pin">ピンコメントの編集</string>
+    <string name="want_save">これによりアプリが終了し、現在のデータが失われる可能性があります。 あなたはあなたの仕事を保存しますか？</string>
+    <string name="caution">注意！</string>
+    <string name="uploading_data">データをアップロードしています。。。</string>
+    <string name="loading_data">データのロード。。。</string>
+    <string name="processing_data">データの処理。。。</string>
+    <string name="please_wait">お待ちください</string>
+    <string name="time_taking">時間がかかります。よろしいですか？</string>
+    <string name="reported">報告</string>
+    <string name="successfully_updated">正常に更新されました。</string>
+
+    <string name="launch_activity">Launch activity</string>
+    <string name="location_unknown">Location Unknown</string>
+    <string name="location_updates_label">Location Updates</string>
+
+    <string name="permission_rationale">Location permission needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
+
+    <string name="start_location_updates_button_text">Start receiving location updates</string>
+    <string name="stop_location_updates_button_text">Stop receiving location updates</string>
+
+    <string name="location_updated">Location Updated: %1$s</string>
+
+    <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
+    <string name="no_location_text">No current location</string>
+    <string name="hint">このアプリでは フォアグラウンドとバックグラウンドでの新聞配達員のリアルタイム位置、作業経路、時間、速度、距離などの追跡と推定 を可能にするために、現在地のデータが収集されます。アプリを閉じているときや、使用していないときにも収集されます。</string>
+    <string name="distribution_area">配布エリア</string>
+    <string name="no_area">エリアが見つかりません。。。</string>
+    <string name="cumulative_distance">累計距離</string>
+
+    <string name="help">
+
+        １．管理パネルにアクセスして管理者ユーザを作ってください（無料）https://www.rakubaru-posting.com/\n\n
+
+２．管理パネルで「社員追加」して、アプリユーザを招待します\n\n
+
+３．招待に使ったメールアドレスと、招待メールに記載されているパスワードでアプリにログインします\n\n
+
+４．アプリで記録したログやピンは管理パネルでも閲覧し、管理できます。
+
+
+    </string>
+
+
+    <!--    <string name="forgot_password_title">Forgot Password</string>-->
+    <!--    <string name="forgot_password_question">Forgot Password?</string>-->
+    <!--    <string name="forgot_password_text">We will send password reset\nlink to your email.</string>-->
+    <!--    <string name="email_address">Email address</string>-->
+    <!--    <string name="submit">Submit</string>-->
+    <!--    <string name="login_title">Login</string>-->
+    <!--    <string name="login">Log In</string>-->
+    <!--    <string name="password">Password</string>-->
+    <!--    <string name="my_profile">My Profile</string>-->
+    <!--    <string name="my_email">My E-mail</string>-->
+    <!--    <string name="full_name">Full Name</string>-->
+    <!--    <string name="phone_number">Phone number</string>-->
+    <!--    <string name="reset_password">Reset password</string>-->
+    <!--    <string name="reset_password_title">Reset Password</string>-->
+    <!--    <string name="save">Save</string>-->
+    <!--    <string name="old_password">Old password</string>-->
+    <!--    <string name="new_password">New password</string>-->
+    <!--    <string name="confirm_password">Confirm password...</string>-->
+    <!--    <string name="no">No</string>-->
+    <!--    <string name="yes">Yes</string>-->
+    <!--    <string name="we_sent_password_reset_link">We\'ve sent you a password reset link via E-mail. Please check.</string>-->
+    <!--    <string name="you_no_registered">You haven\'t been registered.</string>-->
+    <!--    <string name="something_wrong">Something is wrong</string>-->
+    <!--    <string name="invalid_email">Invalid email</string>-->
+    <!--    <string name="invalid_phone">Invalid phone number</string>-->
+    <!--    <string name="incorrect_password">Your password is incorrect.</string>-->
+    <!--    <string name="profile_updated">Your account has been updated successfully.</string>-->
+    <!--    <string name="start">Start</string>-->
+    <!--    <string name="end">End</string>-->
+    <!--    <string name="logout">Log out</string>-->
+    <!--    <string name="my_reports">My Reports</string>-->
+    <!--    <string name="settings">Settings</string>-->
+    <!--    <string name="my_location">My location</string>-->
+    <!--    <string name="keep_my_location">Keep my location centered always.</string>-->
+    <!--    <string name="map_view">Map View</string>-->
+    <!--    <string name="satellite_mode">Satellite mode</string>-->
+    <!--    <string name="miles">miles</string>-->
+    <!--    <string name="stick_pin">Stick a pin</string>-->
+    <!--    <string name="add_comment_pin">Add a comment here...</string>-->
+    <!--    <string name="ok">OK</string>-->
+    <!--    <string name="report_port">Report automatically.</string>-->
+    <!--    <string name="save_rowhen_save">Report when saved</string>-->
+    <!--    <string name="auto_reute">Save the route</string>-->
+    <!--    <string name="write_something_optional">Write something here (Optional)</string>-->
+    <!--    <string name="route_name">Route name</string>-->
+    <!--    <string name="enter_route_name">Enter route name</string>-->
+    <!--    <string name="report_when_save">Report when save</string>-->
+    <!--    <string name="auto_report">Automatically report</string>-->
+    <!--    <string name="search">Search...</string>-->
+    <!--    <string name="no_reports">No reports...</string>-->
+    <!--    <string name="saved">Saved</string>-->
+    <!--    <string name="successfully_sent">Successfully sent!</string>-->
+    <!--    <string name="delete">Delete</string>-->
+    <!--    <string name="report">Report</string>-->
+    <!--    <string name="warning">Warning!</string>-->
+    <!--    <string name="sure_delete_data">Are you sure you want to delete this data?</string>-->
+    <!--    <string name="save_route">Save the route</string>-->
+</resources>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

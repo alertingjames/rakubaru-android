@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFC107</color>
+    <color name="colorPrimaryDark">#FF9800</color>
+    <color name="colorAccent">#F800DF</color>
+
+    <color name="secondary">#d2d2d2</color>
+    <color name="text">#252525</color>
+    <color name="white">#ffffff</color>
+
+    <color name="red">#E61212</color>
+    <color name="item_text">#1A1E3A</color>
+    <color name="gray">#C2C2C2</color>
+    <color name="blue">#2196F3</color>
+    <color name="green">#1CC01C</color>
+    <color name="yellow">#FFEB3B</color>
+    <color name="orange">#FFC107</color>
+
+    <color name="circle_fill_color">#3066cfff</color>
+    <color name="circle_stroke_color">#bd5cc6ff</color>
+
+<!--    <speed colors />-->
+    <color name="speed_00_02">#E60012</color>
+    <color name="speed_02_04">#F39800</color>
+    <color name="speed_04_06">#FFF100</color>
+    <color name="speed_06_08">#8FC31F</color>
+    <color name="speed_08_16">#009944</color>
+    <color name="speed_16_32">#00A0E9</color>
+    <color name="speed_32_64">#0068B7</color>
+    <color name="speed_64_100">#1D2088</color>
+
+</resources>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="15dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="15dp"
+        android:paddingRight="5dp">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/nameBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/route_name"
+                android:textSize="16sp"
+                android:gravity="center_vertical"
+                android:textStyle="bold"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="8dp"
+                android:drawableLeft="@drawable/ic_route"
+                android:drawablePadding="15dp"
+                android:textColor="@color/text"/>
+
+            <TextView
+                android:id="@+id/areaNameBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/text"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:layout_marginLeft="15dp"
+                android:text="Area Name"/>
+
+            <TextView
+                android:id="@+id/assignTitleBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:visibility="gone"
+                android:textColor="@color/text"
+                android:layout_marginLeft="15dp"
+                android:text="Assign title"
+                android:layout_marginBottom="5dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/timeBox"
+                    android:layout_width="0px"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00 ~ 00:00:00"
+                    android:textSize="12sp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:drawableLeft="@drawable/ic_time"
+                    android:drawablePadding="5dp"
+                    android:drawableTint="@color/colorPrimaryDark"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/text"/>
+                <TextView
+                    android:id="@+id/durationBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0H 0M 0S"
+                    android:textSize="14sp"
+                    android:drawableTint="@color/colorPrimaryDark"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/colorPrimaryDark"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/distanceBox"
+                    android:layout_width="0px"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="0.00km"
+                    android:textSize="14sp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:drawableLeft="@drawable/ic_dist"
+                    android:drawablePadding="5dp"
+                    android:drawableTint="@color/colorPrimaryDark"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/text"/>
+                <TextView
+                    android:id="@+id/speedBox"
+                    android:layout_width="0px"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="0.00mps"
+                    android:textSize="14sp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:drawableLeft="@drawable/ic_speed"
+                    android:drawablePadding="5dp"
+                    android:drawableTint="@color/colorPrimaryDark"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/text"/>
+                <TextView
+                    android:id="@+id/statusBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/text"
+                    android:gravity="center"
+                    android:paddingTop="3dp"
+                    android:paddingLeft="6dp"
+                    android:paddingBottom="3dp"
+                    android:paddingRight="6dp"
+                    android:visibility="visible"
+                    android:background="@drawable/primary_light_rect_fill"
+                    android:text="@string/reported"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/descriptionBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:textSize="14sp"
+                android:textColor="@color/text"
+                android:text=""
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:padding="2dp"
+            android:layout_gravity="center_vertical"
+            android:tint="@color/text"
+            android:rotation="180"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/backarrow"/>
+
+    </LinearLayout>
+
+</FrameLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

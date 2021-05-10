@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".main.RouteActivity">
+
+    <com.app.rakubaru.classes.MapWrapperLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/map_relative_layout"
+        android:orientation="vertical">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/map"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </FrameLayout>
+    </com.app.rakubaru.classes.MapWrapperLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:layout_gravity="bottom">
+            <LinearLayout
+                android:id="@+id/panel"
+                android:visibility="visible"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingLeft="10dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:paddingRight="10dp"
+                android:background="@color/white"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/durationBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:15:20"
+                    android:textSize="18sp"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="@color/text"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_speed"/>
+                        <TextView
+                            android:id="@+id/speedBox"
+                            android:layout_width="0px"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="15mps"
+                            android:textSize="12sp"
+                            android:layout_marginLeft="5dp"
+                            android:textColor="@color/text"/>
+                    </LinearLayout>
+                    <View android:layout_width="0px"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"/>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_dist"/>
+                        <TextView
+                            android:id="@+id/distanceBox"
+                            android:layout_width="0px"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="13km"
+                            android:textSize="12sp"
+                            android:layout_marginLeft="5dp"
+                            android:textColor="@color/text"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="5dp"
+            android:background="@color/white">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_00_02"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 ~ 2 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_02_04"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 ~ 4 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_04_06"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4 ~ 6 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_06_08"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="6 ~ 8 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_08_16"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8 ~ 16 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_16_32"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="16 ~ 32 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_32_64"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="32 ~ 64 km/h"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <View android:layout_width="50dp"
+                    android:layout_height="5dp"
+                    android:background="@color/speed_64_100"
+                    android:layout_gravity="center_vertical"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="64 km/h ~"
+                    android:textColor="@color/text"
+                    android:textSize="10sp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/gray_stroke_rect"
+            android:layout_gravity="center_vertical"
+            android:padding="6dp"
+            android:src="@drawable/ic_left"
+            android:onClick="back"
+            android:visibility="visible"
+            android:tint="@color/text"
+            tools:ignore="OnClick" />
+
+        <ImageView
+            android:id="@+id/mapTypeBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/gray_stroke_rect"
+            android:layout_gravity="center_vertical|right"
+            android:padding="6dp"
+            android:src="@drawable/satellite"
+            android:onClick="toggleMapType"
+            android:visibility="visible"
+            tools:ignore="OnClick"
+            app:tint="@color/text" />
+
+    </FrameLayout>
+
+    <View
+        android:id="@+id/darkbg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:background="#99000000"/>
+
+    <LinearLayout
+        android:id="@+id/loadingView"
+        android:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_margin="50dp"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:background="@drawable/white_rect_fill">
+        <TextView
+            android:id="@+id/content1"
+            android:layout_margin="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:fontFamily="@font/comfortaa"
+            android:gravity="center"
+            android:text="@string/loading_data"
+            android:textColor="@color/text"/>
+        <TextView
+            android:id="@+id/content2"
+            android:layout_marginBottom="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:fontFamily="@font/comfortaa"
+            android:gravity="center"
+            android:text="@string/please_wait"
+            android:textColor="@color/text"/>
+    </LinearLayout>
+
+    <com.wang.avi.AVLoadingIndicatorView
+        android:id="@+id/loading_bar"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:indicator="LineSpinFadeLoader"
+        app:indicator_color="#F53700" />
+
+</FrameLayout>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
