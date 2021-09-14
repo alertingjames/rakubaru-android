@@ -40,7 +40,7 @@ public class SplashActivity extends BaseActivity {
 
         progressBar = (AVLoadingIndicatorView)findViewById(R.id.loading_bar);
 
-        checkPermissions(LOC_PER);
+//        checkPermissions(LOC_PER);
 
 //        EasyPreference.with(getApplicationContext(), "user_info").clearAll().save();
 
@@ -124,33 +124,6 @@ public class SplashActivity extends BaseActivity {
                     }
                 });
 
-    }
-
-    public void checkPermissions0(String[] PERMISSIONS) {
-        if (Build.VERSION.SDK_INT > 9) {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-        }
-        if (hasPermissions(this, PERMISSIONS)) {
-            String email = EasyPreference.with(getApplicationContext(), "user_info").getString("email", "");
-            String password = EasyPreference.with(getApplicationContext(), "user_info").getString("password", "");
-            Log.d("EMAIL!!!", email);
-            if(email.length() > 0 && password.length() > 0){
-                login(email, password);
-            }else {
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(intent);
-                finish();
-                overridePendingTransition(0,0);
-            }
-        }else {
-            Log.d("Status===>", "No permissions");
-            EasyPreference.with(getApplicationContext(), "user_info").clearAll().save();
-            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-            startActivity(intent);
-            finish();
-            overridePendingTransition(0,0);
-        }
     }
 
 }

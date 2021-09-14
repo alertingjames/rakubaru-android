@@ -581,6 +581,9 @@ public class BaseActivity extends AppCompatActivity {
                                 if(devStatus.equals("out"))logOut();
                             }else if(result.equals("1")){
                                 logOut();
+                            }else if(result.equals("100")){
+                                showToast(getString(R.string.admin_payment_introuble));
+                                logOut();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

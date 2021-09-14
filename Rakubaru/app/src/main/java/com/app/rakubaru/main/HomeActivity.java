@@ -88,11 +88,6 @@ import com.skydoves.powermenu.MenuAnimation;
 import com.skydoves.powermenu.OnMenuItemClickListener;
 import com.skydoves.powermenu.PowerMenu;
 import com.skydoves.powermenu.PowerMenuItem;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 import com.wang.avi.AVLoadingIndicatorView;
 
 import org.json.JSONArray;
@@ -100,6 +95,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -107,8 +103,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.PI;
 
@@ -161,6 +155,8 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
     SharedPreferences shref;
     SharedPreferences.Editor editor;
+
+    ArrayList<File> gFiles = new ArrayList<>();
 
     OnMenuItemClickListener<PowerMenuItem> onMenuItemClickListener = new OnMenuItemClickListener<PowerMenuItem>() {
         @Override
@@ -408,7 +404,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         if(Commons.mapCameraMoveF){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, mMap.getCameraPosition().zoom));
         }
-        if(isLocationRecording) drawRoute(myLatLng);
+        if(isLocationRecording) drawRoute(myLatLng, false);
     }
 
     public LatLng getCenterCoordinate(LatLng latLng) {
@@ -788,7 +784,20 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             if(!isLocationRecording){
                 initialize.sharedPreferences.edit().remove(SharedPreferenceUtil.KEY_FOREGROUND_ENABLED).commit();
             }else{
+                Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
+                recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
+                recordBtn.setTextColor(Color.WHITE);
+                recordBtn.setText(getString(R.string.start));
+                isLocationRecording = false;
                 showAlertDialogForRouteSaveInput(HomeActivity.this);
+
+                if(!traces1.isEmpty()){
+                    try {
+                        uploadRoute();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         } else {
             // TODO: Step 1.0, Review Permissions: Checks and requests if needed.
@@ -949,7 +958,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
     private static double lastDistance = 0.0d;
 
-    public void drawRoute(LatLng curLatLng){
+    public void drawRoute(LatLng curLatLng, boolean isFirst){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1020,10 +1029,12 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 String colorStr = "#" + getResources().getString(getColorFromSpeed(mSpeed)).substring(3, 9);
                 rpoint.setColor(colorStr);
                 traces.add(rpoint);
-                if(!isNetworkConnected()){
-                    traces1.add(rpoint);
-                    Log.d("OFFLINE TRACE POINTS", String.valueOf(traces1.size()));
-                }
+//                if(!isNetworkConnected()){
+//                    traces1.add(rpoint);
+//                    Log.d("OFFLINE TRACE POINTS", String.valueOf(traces1.size()));
+//                }
+
+                traces1.add(rpoint);
 
                 Log.d("Polyline color", colorStr);
 
@@ -1035,30 +1046,33 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 lastLatlng = curLatLng;
 
                 backup();
+                saveLocationPoints(traces1, getString(R.string.location_points));
 
                 if(isNetworkConnected()) {
-                    if(traces1.size() > 0) {
-                        int cnt = EasyPreference.with(getApplicationContext()).getInt("network_delay", 0);
-                        cnt++;
-                        if(cnt > 5){
-                            try {
-                                uploadRoute();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }else {
-                            traces1.add(rpoint);
-                        }
-                        EasyPreference.with(getApplicationContext()).addInt("network_delay", cnt).save();
-                    }else {
+                    ArrayList<RPoint> rpoints = getLocationPoints(getString(R.string.location_points));
+                    if(rpoints == null) traces1 = rpoints;
+                    if(isFirst){
                         try {
-                            uploadRealTimeRoute("", "", "report", curLatLng, colorStr, "", 1, pulse);
+                            uploadRoute();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                    }else {
+                        if(traces1.size() > 20) {
+                            int cnt = EasyPreference.with(getApplicationContext()).getInt("network_delay", 0);
+                            cnt++;
+                            if(cnt > 5){
+                                try {
+                                    uploadRoute();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                traces1.add(rpoint);
+                            }
+                            EasyPreference.with(getApplicationContext()).addInt("network_delay", cnt).save();
+                        }
                     }
-                }else {
-                    saveLocationPoints(traces1, getString(R.string.location_points));
                 }
 
                 Log.d("TRACE POINTS", String.valueOf(traces.size()));
@@ -1275,7 +1289,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                         status = "report";
                     }
                     String colorStr = "#" + getResources().getString(getColorFromSpeed(mSpeed)).substring(3, 9);
-                    uploadRealTimeRoute("", description, "report", myLatLng, colorStr, "", 2, false);
+                    uploadRealTimeRoute("", description, "report", 2, false);
                     dialog.dismiss();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1351,15 +1365,19 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         String pointJsonStr = "";
         JSONObject jsonObj = null;
         JSONArray jsonArr = new JSONArray();
-        if (traces1.size()>0){
+        if (traces1.size() > 0){
+            int i = 0;
             for(RPoint point: traces1){
                 jsonObj = new JSONObject();
                 try {
-                    jsonObj.put("lat",String.valueOf(point.getLat()));
-                    jsonObj.put("lng",String.valueOf(point.getLng()));
-                    jsonObj.put("comment",point.getComment());
-                    jsonObj.put("color",point.getColor());
-                    jsonObj.put("time",String.valueOf(point.getTime()));
+                    jsonObj.put("id", String.valueOf(++i));
+                    jsonObj.put("route_id", String.valueOf(routeID));
+                    jsonObj.put("lat", String.valueOf(point.getLat()));
+                    jsonObj.put("lng", String.valueOf(point.getLng()));
+                    jsonObj.put("comment", point.getComment());
+                    jsonObj.put("color", point.getColor());
+                    jsonObj.put("time", String.valueOf(point.getTime()));
+                    jsonObj.put("status", "");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -1880,22 +1898,41 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         } catch (IOException e) {
             e.printStackTrace();
         }
-        progressBar.setVisibility(View.VISIBLE);
-        AndroidNetworking.upload(ReqConst.SERVER_URL + "upRoute")
+
+        routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
+        assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
+        totalDistance = EasyPreference.with(getApplicationContext(), "backup").getFloat("totalDistance", 0);
+        speed = EasyPreference.with(getApplicationContext(), "backup").getFloat("speed", 0);
+        duration = EasyPreference.with(getApplicationContext(), "backup").getLong("duration", 0);
+        startedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("startedTime", 0);
+        endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
+
+//        progressBar.setVisibility(View.VISIBLE);
+        AndroidNetworking.upload(ReqConst.SERVER_URL + "updatereportdatainrealtime")
                 .addMultipartFile("jsonfile", jsonFile.getFile())
                 .addMultipartParameter("route_id", String.valueOf(routeID))
+                .addMultipartParameter("assign_id", String.valueOf(assignID))
+                .addMultipartParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
+                .addMultipartParameter("name", "")
+                .addMultipartParameter("description", "")
+                .addMultipartParameter("start_time", String.valueOf(startedTime))
+                .addMultipartParameter("end_time", String.valueOf(endedTime))
+                .addMultipartParameter("duration", String.valueOf(duration))
+                .addMultipartParameter("speed", String.valueOf(speed))
+                .addMultipartParameter("distance", String.valueOf(totalDistance))
+                .addMultipartParameter("pulse", "0")
+                .addMultipartParameter("status", "report")
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
                         // do anything with response
-                        Log.d("/////////////////===>", response.toString());
-                        progressBar.setVisibility(View.GONE);
+                        Log.d("XXXXXXXXXXX===>", response.toString());
+//                        progressBar.setVisibility(View.GONE);
                         try {
                             String result = response.getString("result_code");
                             if(result.equals("0")){
-                                Log.d("Offline loading: ", response.toString());
                                 traces1.clear();
                                 clearLocationPoints(getString(R.string.location_points));
                                 EasyPreference.with(getApplicationContext()).addInt("network_delay", 0).save();
@@ -1913,7 +1950,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
     }
 
-    private void uploadRealTimeRoute(String name, String description, String status, LatLng latLng, String color, String comment, int end, boolean pulse) throws JSONException {
+    private void uploadRealTimeRoute(String name, String description, String status, int end, boolean pulse) throws JSONException {
         if(end == 0 || end == 2) progressBar.setVisibility(View.VISIBLE);
         routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
         assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
@@ -1922,7 +1959,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         duration = EasyPreference.with(getApplicationContext(), "backup").getLong("duration", 0);
         startedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("startedTime", 0);
         endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
-        AndroidNetworking.post(ReqConst.SERVER_URL + "upRTRoute")
+        AndroidNetworking.post(ReqConst.SERVER_URL + "startorendreporting")
                 .addBodyParameter("route_id", String.valueOf(routeID))
                 .addBodyParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
                 .addBodyParameter("assign_id", String.valueOf(assignID))
@@ -1936,10 +1973,10 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 .addBodyParameter("pulse", pulse? "1":"0")
                 .addBodyParameter("status", status)
 
-                .addBodyParameter("lat", String.valueOf(latLng.latitude))
-                .addBodyParameter("lng", String.valueOf(latLng.longitude))
-                .addBodyParameter("comment", comment)
-                .addBodyParameter("color", color)
+//                .addBodyParameter("lat", String.valueOf(latLng.latitude))
+//                .addBodyParameter("lng", String.valueOf(latLng.longitude))
+//                .addBodyParameter("comment", comment)
+//                .addBodyParameter("color", color)
 
                 .setPriority(Priority.HIGH)
                 .build()
@@ -1970,21 +2007,24 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                                     routeID = Long.parseLong(response.getString("route_id"));
                                     EasyPreference.with(getApplicationContext(), "backup").addLong("route_id", routeID).save();
 
+                                    drawRoute(myLatLng, true);
+
                                 }else {
                                     routeID = Long.parseLong(response.getString("route_id"));
                                     EasyPreference.with(getApplicationContext(), "backup").addLong("route_id", routeID).save();
                                     if(end == 2) {
-                                        Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
-                                        recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
-                                        recordBtn.setTextColor(Color.WHITE);
-                                        recordBtn.setText(getString(R.string.start));
+//                                        Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
+//                                        recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
+//                                        recordBtn.setTextColor(Color.WHITE);
+//                                        recordBtn.setText(getString(R.string.start));
                                         endedTime = new Date().getTime();
-                                        isLocationRecording = false;
+//                                        isLocationRecording = false;
                                         if(status.length() > 0)
                                             showToast2(getString(R.string.successfully_sent));
                                         else
                                             showToast2(getString(R.string.saved));
                                         EasyPreference.with(getApplicationContext(), "backup").clearAll().save();
+
                                         openReport();
                                     }
                                 }
@@ -2068,8 +2108,8 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                     if(checkBox.isChecked()){
                         status = "report";
                     }
-                    String colorStr = "#" + getResources().getString(getColorFromSpeed(mSpeed)).substring(3, 9);
-                    uploadRealTimeRoute(name, "", "report", myLatLng, colorStr, "", 0, false);
+
+                    uploadRealTimeRoute(name, "", "report", 0, false);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

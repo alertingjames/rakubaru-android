@@ -29,6 +29,7 @@
     <string name="invalid_phone">無効な電話番号</string>
     <string name="incorrect_password">パスワードが間違っています。</string>
     <string name="already_loggedin">すでに別の電話からログインしています。 別の電話で同時にログインすることはできません。</string>
+    <string name="admin_payment_introuble">あなたの管理者の支払いは困っています。 それが解決されるまでログインすることはできません。</string>
     <string name="profile_updated">アカウントが正常に更新されました。</string>
     <string name="start">開始</string>
     <string name="end">終了</string>
@@ -103,11 +104,11 @@
 
         １．管理パネルにアクセスして管理者ユーザを作ってください（無料）https://www.rakubaru-posting.com/\n\n
 
-２．管理パネルで「社員追加」して、アプリユーザを招待します\n\n
+        ２．管理パネルで「社員追加」して、アプリユーザを招待します\n\n
 
-３．招待に使ったメールアドレスと、招待メールに記載されているパスワードでアプリにログインします\n\n
+        ３．招待に使ったメールアドレスと、招待メールに記載されているパスワードでアプリにログインします\n\n
 
-４．アプリで記録したログやピンは管理パネルでも閲覧し、管理できます。
+        ４．アプリで記録したログやピンは管理パネルでも閲覧し、管理できます。
 
 
     </string>

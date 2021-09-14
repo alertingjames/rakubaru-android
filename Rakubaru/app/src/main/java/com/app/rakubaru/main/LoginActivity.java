@@ -44,8 +44,6 @@ public class LoginActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        checkPermissions(LOC_PER);
-
         progressBar = (AVLoadingIndicatorView)findViewById(R.id.loading_bar);
 
         loginBtn = (TextView)findViewById(R.id.loginBtn);
@@ -179,6 +177,9 @@ public class LoginActivity extends BaseActivity {
                             }else if(result.equals("3")){
                                 Commons.thisUser = null;
                                 showToast(getString(R.string.already_loggedin));
+                            }else if(result.equals("100")){
+                                Commons.thisUser = null;
+                                showToast(getString(R.string.admin_payment_introuble));
                             }else {
                                 Commons.thisUser = null;
                                 showToast(getString(R.string.something_wrong));
@@ -211,6 +212,7 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 EasyPreference.with(getApplicationContext(), "action_info").addBoolean("hint_read", true).save();
+                checkPermissions(LOC_PER);
                 dialog.dismiss();
             }
         });
