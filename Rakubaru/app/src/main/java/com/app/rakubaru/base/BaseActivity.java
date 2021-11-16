@@ -3,8 +3,7 @@ package com.app.rakubaru.base;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -45,14 +45,11 @@ import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.app.rakubaru.BuildConfig;
 import com.app.rakubaru.R;
 import com.app.rakubaru.commons.Commons;
 import com.app.rakubaru.commons.ReqConst;
-import com.app.rakubaru.main.HomeActivity;
-import com.app.rakubaru.main.LoginActivity;
 import com.app.rakubaru.models.RPoint;
-import com.app.rakubaru.models.Route;
-import com.app.rakubaru.models.User;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.iamhabib.easy_preference.EasyPreference;
@@ -73,11 +70,13 @@ public class BaseActivity extends AppCompatActivity {
 
     public static DecimalFormat df = new DecimalFormat("0.00");
 
+    @SuppressLint("InlinedApi")
     public static final String[] LOC_PER = {
             android.Manifest.permission.INTERNET,
             android.Manifest.permission.ACCESS_WIFI_STATE,
             android.Manifest.permission.ACCESS_NETWORK_STATE,
             android.Manifest.permission.FOREGROUND_SERVICE,
+            android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION,
             android.Manifest.permission.READ_PHONE_STATE,
@@ -85,7 +84,7 @@ public class BaseActivity extends AppCompatActivity {
     public static final String[] CAM_PER = {
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA
+//            android.Manifest.permission.CAMERA
     };
 
     @Override
@@ -622,6 +621,19 @@ public class BaseActivity extends AppCompatActivity {
             return gson.fromJson(sharedPreferences.getString(preferenceKey, ""), type);
         }
         return null;
+    }
+
+    public void openSettings(){
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts(
+                "package",
+                BuildConfig.APPLICATION_ID,
+                null
+        );
+        intent.setData(uri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
 

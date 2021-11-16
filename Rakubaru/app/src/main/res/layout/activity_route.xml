@@ -255,34 +255,34 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/gray_stroke_rect"
-            android:layout_gravity="center_vertical"
             android:padding="6dp"
             android:src="@drawable/ic_left"
             android:onClick="back"
             android:visibility="visible"
-            android:tint="@color/text"
-            tools:ignore="OnClick" />
+            tools:ignore="OnClick"
+            app:tint="@color/text" />
 
         <ImageView
             android:id="@+id/mapTypeBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginTop="80dp"
             android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/gray_stroke_rect"
-            android:layout_gravity="center_vertical|right"
+            android:layout_gravity="right"
             android:padding="6dp"
             android:src="@drawable/satellite"
             android:onClick="toggleMapType"
-            android:visibility="visible"
             tools:ignore="OnClick"
             app:tint="@color/text" />
 

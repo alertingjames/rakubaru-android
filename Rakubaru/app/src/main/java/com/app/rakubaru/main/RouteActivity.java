@@ -137,11 +137,11 @@ public class RouteActivity extends BaseActivity implements OnMapReadyCallback, V
             params_zoom.setMargins(margin, margin * 20, margin, margin);
         }
 
-        View locationButton = ((View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-        rlp.setMargins(0, 200, 30, 30);
+//        View locationButton = ((View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+//        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+//        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+//        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+//        rlp.setMargins(0, 200, 30, 30);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)

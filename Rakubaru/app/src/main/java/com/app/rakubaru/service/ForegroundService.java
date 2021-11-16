@@ -53,7 +53,7 @@ public class ForegroundService extends LifecycleService {
                 i++;
                 Log.d("i+++", String.valueOf(i));
 //                Commons.homeActivity.drawRoute(i);
-                Commons.homeActivity.drawRoute(Commons.homeActivity.myLatLng, false);
+//                Commons.homeActivity.drawRoute(Commons.homeActivity.myLatLng);
 
             }
             }, 0, 500);

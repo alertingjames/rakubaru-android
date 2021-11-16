@@ -17,6 +17,7 @@ import com.app.rakubaru.R
 import com.app.rakubaru.commons.Commons
 import com.app.rakubaru.main.HomeActivity
 import com.app.rakubaru.main.MainActivity
+import com.app.rakubaru.models.RPoint
 import com.app.rakubaru.utils.SharedPreferenceUtil
 import com.app.rakubaru.utils.toText
 
@@ -41,6 +42,10 @@ class ForegroundOnlyLocationService : Service() {
      * Checks whether the bound activity has really gone away (foreground service with notification
      * created) or simply orientation change (no-op).
      */
+
+    public val total_points = arrayListOf<RPoint>()
+    public val realtime_points = arrayListOf<RPoint>()
+
     private var configurationChange = false
 
     private var serviceRunningInForeground = false
@@ -310,6 +315,60 @@ class ForegroundOnlyLocationService : Service() {
                         servicePendingIntent
                 )
                 .build()
+    }
+
+    public fun makeWorkExceedNotification() {
+        Log.d(TAG, "generate Work Exceed Notification()")
+
+        // 0. Get data
+        val mainNotificationText = "あなたの仕事は8時間を超えています。"
+        val titleText = getString(R.string.app_name)
+
+        // 1. Create Notification Channel for O+ and beyond devices (26+).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val notificationChannel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_DEFAULT)
+
+            // Adds NotificationChannel to system. Attempting to create an
+            // existing notification channel with its original values performs
+            // no operation, so it's safe to perform the below sequence.
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+
+        // 2. Build the BIG_TEXT_STYLE.
+        val bigTextStyle = NotificationCompat.BigTextStyle()
+            .bigText(mainNotificationText)
+            .setBigContentTitle(titleText)
+
+        // 3. Set up main Intent/Pending Intents for notification.
+        val launchActivityIntent = Intent(this, HomeActivity::class.java)
+
+        val cancelIntent = Intent(this, ForegroundOnlyLocationService::class.java)
+        cancelIntent.putExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, true)
+
+        val activityPendingIntent = PendingIntent.getActivity(
+            this, 0, launchActivityIntent, 0)
+
+        // 4. Build and issue the notification.
+        // Notification Channel Id is ignored for Android pre O (26).
+        val notificationCompatBuilder =
+            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+
+        val notification = notificationCompatBuilder
+            .setStyle(bigTextStyle)
+            .setContentTitle(titleText)
+            .setContentText(mainNotificationText)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .addAction(
+                R.drawable.icon, getString(R.string.launch_activity),
+                activityPendingIntent
+            )
+            .build()
+
+        startForeground(NOTIFICATION_ID, notification)
     }
 
     /**

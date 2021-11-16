@@ -1,14 +1,13 @@
 package com.app.rakubaru.main;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.ColorUtils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,9 +21,10 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -37,29 +37,26 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
-import com.app.rakubaru.BuildConfig;
 import com.app.rakubaru.R;
 import com.app.rakubaru.adapters.CustomInfoWindowAdapter;
 import com.app.rakubaru.base.BaseActivity;
 import com.app.rakubaru.classes.JsonFile;
 import com.app.rakubaru.classes.MapWrapperLayout;
-import com.app.rakubaru.classes.TestDirectionData;
 import com.app.rakubaru.commons.Commons;
 import com.app.rakubaru.commons.Constants;
 import com.app.rakubaru.commons.ReqConst;
 import com.app.rakubaru.models.Area;
 import com.app.rakubaru.models.RPoint;
-import com.app.rakubaru.models.Route;
 import com.app.rakubaru.models.Subloc;
 import com.app.rakubaru.service.ForegroundOnlyLocationService;
 import com.app.rakubaru.service.ForegroundServiceInitialize;
@@ -88,14 +85,12 @@ import com.skydoves.powermenu.MenuAnimation;
 import com.skydoves.powermenu.OnMenuItemClickListener;
 import com.skydoves.powermenu.PowerMenu;
 import com.skydoves.powermenu.PowerMenuItem;
-import com.wang.avi.AVLoadingIndicatorView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -105,6 +100,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.min;
 
 public class HomeActivity extends BaseActivity implements OnMapReadyCallback, View.OnClickListener,  SharedPreferences.OnSharedPreferenceChangeListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -128,7 +124,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     LinearLayout panel;
     TextView durationBox, speedBox, distanceBox;
     PowerMenu powerMenu = null;
-    AVLoadingIndicatorView progressBar;
+    FrameLayout progressBar;
 
     public static final int[] MAP_TYPES = {
             GoogleMap.MAP_TYPE_SATELLITE,
@@ -149,14 +145,14 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     public static ArrayList<Polyline> polylines = new ArrayList<>();
 
     public static ArrayList<RPoint> traces0 = new ArrayList<>();
-    public static ArrayList<RPoint> traces1 = new ArrayList<>();
-    public static ArrayList<RPoint> traces = new ArrayList<>();
     public static boolean isDataLoading = false;
+
+    private RPoint curPoint;
 
     SharedPreferences shref;
     SharedPreferences.Editor editor;
 
-    ArrayList<File> gFiles = new ArrayList<>();
+    public static final int PERMISSIONS_REQUEST = 101;
 
     OnMenuItemClickListener<PowerMenuItem> onMenuItemClickListener = new OnMenuItemClickListener<PowerMenuItem>() {
         @Override
@@ -187,6 +183,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     ForegroundServiceInitialize initialize;
     ServiceConnection foregroundOnlyServiceConnection;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -215,6 +212,42 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             }
         });
 
+        checkPermissions(LOC_PER);
+        checkPermissions(CAM_PER);
+        grantPermissions();
+
+        if(ActivityCompat.shouldShowRequestPermissionRationale(HomeActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
+                    .setTitle("バックグラウンドロケーション許可")
+                    .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                            "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                    .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            openSettings();
+                        }
+                    })
+                    .setNegativeButton("キャンセル", null)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
+                        .setTitle("ファイルアクセス許可")
+                        .setMessage("すべてのファイルへのアクセスを許可してください。")
+                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton("キャンセル", null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        }
+
         isLocationRecording = false;
         totalDistance = 0.0d;
         speed = 0.0d;
@@ -226,7 +259,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
         shref = getSharedPreferences("ROUTE", Context.MODE_PRIVATE);
 
-        progressBar = (AVLoadingIndicatorView)findViewById(R.id.loading_bar);
+        progressBar = (FrameLayout)findViewById(R.id.progress_overlay);
 
         saveBtn = (Button)findViewById(R.id.saveBtn);
         recordBtn = (Button)findViewById(R.id.recordBtn);
@@ -259,12 +292,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             params_zoom.setMargins(margin, margin * 20, margin, margin);
         }
 
-        View locationButton = ((View) mapFragment.getView().findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-        rlp.setMargins(0, 200, 30, 30);
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -283,13 +310,35 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             restore();
         }else {
             EasyPreference.with(getApplicationContext(), "backup").clearAll().save();
-//            clearSharedPreference(HomeActivity.this, "TRACE", "traces");
+            Commons.traces.clear();
+            Commons.routeTraces111.clear();
         }
-
-        checkPermissions(CAM_PER);
 
     }
 
+    public void grantPermissions() {
+        ArrayList<String> arrPerm = new ArrayList<>();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            arrPerm.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            arrPerm.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            arrPerm.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            arrPerm.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+        }
+        if(!arrPerm.isEmpty()) {
+            String[] permissions = new String[arrPerm.size()];
+            permissions = arrPerm.toArray(permissions);
+            ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_REQUEST);
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void restore(){
         routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
         assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
@@ -316,14 +365,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         speed = (double) totalDistance * 3600/((new Date().getTime() - startedTime > 1000? new Date().getTime() - startedTime : 1000)*0.001);
         speedBox.setText(df.format(speed) + "km/h");
 
-//        traces0 = getSavedTraceFromPreference(HomeActivity.this, "TRACE", "traces");
-        ArrayList<RPoint> rpoints = getLocationPoints(getString(R.string.location_points));
-        if(rpoints == null) traces1 = rpoints;
-
-        ((LinearLayout)findViewById(R.id.loadingView)).setVisibility(View.VISIBLE);
-        ((View)findViewById(R.id.darkbg)).setVisibility(View.VISIBLE);
-
-        getRoute(routeID);
+        new ShowPolyLine().execute();
     }
 
     private void showKeyboard(){
@@ -404,7 +446,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         if(Commons.mapCameraMoveF){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, mMap.getCameraPosition().zoom));
         }
-        if(isLocationRecording) drawRoute(myLatLng, false);
+        if(isLocationRecording) drawRoute(myLatLng);
     }
 
     public LatLng getCenterCoordinate(LatLng latLng) {
@@ -784,20 +826,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             if(!isLocationRecording){
                 initialize.sharedPreferences.edit().remove(SharedPreferenceUtil.KEY_FOREGROUND_ENABLED).commit();
             }else{
-                Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
-                recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
-                recordBtn.setTextColor(Color.WHITE);
-                recordBtn.setText(getString(R.string.start));
-                isLocationRecording = false;
-                showAlertDialogForRouteSaveInput(HomeActivity.this);
-
-                if(!traces1.isEmpty()){
-                    try {
-                        uploadRoute();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
+                finalizeReport(false);
             }
         } else {
             // TODO: Step 1.0, Review Permissions: Checks and requests if needed.
@@ -809,6 +838,41 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         }
 
         checkDevice();
+    }
+
+    boolean IS8HOURS = false;
+    private void finalizeReport(boolean is8hours) {
+        Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
+        recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
+        recordBtn.setTextColor(Color.WHITE);
+        recordBtn.setText(getString(R.string.start));
+        isLocationRecording = false;
+        backup();
+
+        IS8HOURS = is8hours;
+
+        if(!is8hours) showAlertDialogForRouteSaveInput(HomeActivity.this);
+        else initialize.notify8hoursExceed();
+
+        if(curPoint != null){
+            if(isNetworkConnected()) {
+                if(Commons.routeTraces111.size() > 0) {
+                    try {
+                        uploadRoutePoints(true);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else {
+                    if(is8hours){
+                        try {
+                            uploadStartOrEndRoute("", "", 2);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -898,7 +962,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             isLocationRecording = true;
         }else{
             ActivityCompat.requestPermissions(
-                    HomeActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    HomeActivity.this, LOC_PER,
                     REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
             );
         }
@@ -922,18 +986,39 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 isLocationRecording = true;
             } else {
                 updateButtonState(false);
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts(
-                        "package",
-                        BuildConfig.APPLICATION_ID,
-                        null
-                );
-                intent.setData(uri);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                openSettings();
+            }
+        }else if(requestCode == PERMISSIONS_REQUEST){
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0) {
+                for(int i = 0; i < grantResults.length; i++) {
+                    String permission = permissions[i];
+                    if(Manifest.permission.ACCESS_FINE_LOCATION.equals(permission)) {
+                        if(grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            // you now have permission
+                        }else openSettings();
+                    }
+                    if(Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
+                        if(grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            // you now have permission
+                        }else openSettings();
+                    }
+                    if(Manifest.permission.FOREGROUND_SERVICE.equals(permission)) {
+                        if(grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            // you now have permission
+                        }else openSettings();
+                    }
+                    if(Manifest.permission.ACCESS_BACKGROUND_LOCATION.equals(permission)) {
+                        if(grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            // you now have permission
+                        }else openSettings();
+                    }
+                }
+            } else {
+                openSettings();
             }
         }
+
     }
 
     public void saveLocation(View view){
@@ -945,7 +1030,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             polyline.remove();
         }
         polylines.clear();
-        traces.clear();
         traces0.clear();
     }
 
@@ -957,33 +1041,37 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     }
 
     private static double lastDistance = 0.0d;
+    long currentTime = new Date().getTime();
 
-    public void drawRoute(LatLng curLatLng, boolean isFirst){
+    boolean xxx = false;
+
+    public void drawRoute(LatLng curLatLng){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                long currentTime = new Date().getTime();
-                if(traces.isEmpty()){
+                currentTime = new Date().getTime();
+                if(Commons.traces.isEmpty()){
                     RPoint rpoint = new RPoint();
                     rpoint.setLat(lastLatlng.latitude);
                     rpoint.setLng(lastLatlng.longitude);
                     rpoint.setTime(String.valueOf(currentTime));
-                    traces.add(rpoint);
+                    Commons.traces.add(rpoint);
+                    curPoint = rpoint;
                 }
                 ArrayList<LatLng> points = new ArrayList<LatLng>();
                 PolylineOptions lineOptions = new PolylineOptions();
 
-                RPoint lastPoint = traces.get(traces.size() - 1);
+                RPoint lastPoint = Commons.traces.get(Commons.traces.size() - 1);
 
                 boolean pulse = false;
 
-                if(traces.size() >= 2) {
-                    RPoint lastPoint0 = traces.get(traces.size() - 2);
+                if(Commons.traces.size() >= 2) {
+                    RPoint lastPoint0 = Commons.traces.get(Commons.traces.size() - 2);
                     double dist0 = getDistance(new LatLng(lastPoint0.getLat(), lastPoint0.getLng()), new LatLng(lastPoint.getLat(), lastPoint.getLng()));
                     double dist1 = getDistance(new LatLng(lastPoint.getLat(), lastPoint.getLng()), curLatLng);
                     double dist2 = getDistance(new LatLng(lastPoint0.getLat(), lastPoint0.getLng()), curLatLng);
                     if(dist2 < dist0 || dist2 < dist1){
-                        traces.remove(lastPoint);
+                        Commons.traces.remove(lastPoint);
                         pulse = true;
                         polylines.get(polylines.size() - 1).remove();
                         polylines.remove(polylines.get(polylines.size() - 1));
@@ -1008,8 +1096,10 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
                 /////// Unit:  km/h
                 mSpeed = (double) lastDistance * 3600
-                        /((currentTime - Long.parseLong(lastPoint.getTime()) > 1000? currentTime - Long.parseLong(lastPoint.getTime()) : 1000) * 0.001);
-                lineOptions.color(getColor(getColorFromSpeed(mSpeed)));
+                        /((currentTime - Long.parseLong(lastPoint.getTime()) > 100? currentTime - Long.parseLong(lastPoint.getTime()) : 100) * 0.001);
+
+                int pColor = getColorFromSpeed(mSpeed);
+                lineOptions.color(getColor(pColor));
                 Polyline polyline = mMap.addPolyline(lineOptions);
                 polylines.add(polyline);
 
@@ -1026,56 +1116,52 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 rpoint.setLat(curLatLng.latitude);
                 rpoint.setLng(curLatLng.longitude);
                 rpoint.setTime(String.valueOf(currentTime));
-                String colorStr = "#" + getResources().getString(getColorFromSpeed(mSpeed)).substring(3, 9);
+                String colorStr = "#" + getResources().getString(pColor).substring(3, 9);
                 rpoint.setColor(colorStr);
-                traces.add(rpoint);
-//                if(!isNetworkConnected()){
-//                    traces1.add(rpoint);
-//                    Log.d("OFFLINE TRACE POINTS", String.valueOf(traces1.size()));
-//                }
 
-                traces1.add(rpoint);
+                curPoint = rpoint;
 
                 Log.d("Polyline color", colorStr);
 
-                if(traces.size() == 2){
-                    traces.get(0).setColor(rpoint.getColor());
+                if(Commons.traces.size() == 2){
+                    Commons.traces.get(0).setColor(rpoint.getColor());
                 }
+
+                Commons.traces.add(rpoint);
+                Commons.routeTraces111.add(rpoint);
 
                 endedTime = new Date().getTime();
                 lastLatlng = curLatLng;
 
                 backup();
-                saveLocationPoints(traces1, getString(R.string.location_points));
 
-                if(isNetworkConnected()) {
-                    ArrayList<RPoint> rpoints = getLocationPoints(getString(R.string.location_points));
-                    if(rpoints == null) traces1 = rpoints;
-                    if(isFirst){
+                if(getDur(duration).getHours() >= 8) {
+                    finalizeReport(true);
+                    return;
+                }
+
+                if(xxx) {
+                    traces0.add(rpoint);
+                    return;
+                }
+
+                long last_loaded = EasyPreference.with(getApplicationContext()).getLong("last_loaded", 0);
+                long diff = currentTime - last_loaded;
+                Log.d("DIFF ========== >", String.valueOf(diff));
+                if(diff > 600000){
+                    if(isNetworkConnected()){
                         try {
-                            uploadRoute();
+                            xxx = true;
+                            uploadRoutePoints(false);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }else {
-                        if(traces1.size() > 20) {
-                            int cnt = EasyPreference.with(getApplicationContext()).getInt("network_delay", 0);
-                            cnt++;
-                            if(cnt > 5){
-                                try {
-                                    uploadRoute();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }else {
-                                traces1.add(rpoint);
-                            }
-                            EasyPreference.with(getApplicationContext()).addInt("network_delay", cnt).save();
-                        }
+                        xxx = false;
+                        if(!traces0.isEmpty())traces0.clear();
                     }
                 }
-
-                Log.d("TRACE POINTS", String.valueOf(traces.size()));
+                Log.d("TRACE POINTS", String.valueOf(Commons.traces.size()));
             }
         });
     }
@@ -1102,6 +1188,13 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         return timeStr;
     }
 
+    private DurTime getDur(long timeDiff){
+        int seconds = (int) (timeDiff / 1000) % 60 ;
+        int minutes = (int) ((timeDiff / (1000*60)) % 60);
+        int hours   = (int) ((timeDiff / (1000*60*60)) % 24);
+        return new DurTime(hours, minutes);
+    }
+
     private void backup(){
         EasyPreference.with(getApplicationContext(), "backup").addFloat("totalDistance", (float) totalDistance).save();
         EasyPreference.with(getApplicationContext(), "backup").addFloat("speed", (float) speed).save();
@@ -1117,7 +1210,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             EasyPreference.with(getApplicationContext(), "backup").addFloat("last_lng", (float)myLatLng.longitude).save();
             lastLatlng = myLatLng;
         }
-//        saveTraceToSharedPreference(HomeActivity.this, "TRACE", "traces", traces);
     }
 
     public void showAlertDialogForPinCommentInput(LatLng latLng, String title, String hint, Activity activity){
@@ -1265,6 +1357,9 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         descriptionBox.setFocusable(true);
         descriptionBox.requestFocus();
 
+        TextView noteBox = (TextView) view.findViewById(R.id.note);
+        noteBox.setVisibility(View.GONE);
+
         CheckBox checkBox = (CheckBox) view.findViewById(R.id.auto_report);
         if(Commons.autoReport)checkBox.setChecked(true);
         checkBox.setVisibility(View.GONE);
@@ -1273,12 +1368,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if(nameBox.getText().length() == 0){
-//                    nameBox.setError(getString(R.string.enter_route_name));
-//                    return;
-//                }
-//                nameBox.clearFocus();
-
                 descriptionBox.clearFocus();
 
                 try {
@@ -1289,35 +1378,11 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                         status = "report";
                     }
                     String colorStr = "#" + getResources().getString(getColorFromSpeed(mSpeed)).substring(3, 9);
-                    uploadRealTimeRoute("", description, "report", 2, false);
+                    uploadStartOrEndRoute("", description, 2);
                     dialog.dismiss();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-//                try {
-//                    shref = getSharedPreferences("ROUTE", Context.MODE_PRIVATE);
-//
-//                    Route route = new Route();
-//                    route.setMember_id(Commons.thisUser.getIdx());
-//                    route.setName(nameBox.getText().toString());
-//                    route.setDescription(descriptionBox.getText().toString());
-//                    route.setDuration(duration);
-//                    route.setDistance(totalDistance);
-//                    route.setSpeed(speed);
-//                    route.setStart_time(String.valueOf(startedTime));
-//                    route.setEnd_time(String.valueOf(endedTime));
-//
-//                    for(RPoint point:traces){
-//                        point.setRoute_id(route.getIdx());
-//                    }
-//
-//                    Log.d("TRACES COUNT!!!", String.valueOf(traces.size()));
-//
-//                    uploadRoute(route);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
 
                 dialog.dismiss();
             }
@@ -1361,13 +1426,14 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 //        dialog.setCancelable(false);
     }
 
-    public String createPointsJsonString()throws JSONException {
+    public String createPointsJsonString(ArrayList<RPoint> rPoints)throws JSONException {
         String pointJsonStr = "";
         JSONObject jsonObj = null;
         JSONArray jsonArr = new JSONArray();
-        if (traces1.size() > 0){
+        ArrayList<RPoint> pointArrayList = new ArrayList<>(rPoints);
+        if (pointArrayList.size() > 0){
             int i = 0;
-            for(RPoint point: traces1){
+            for(RPoint point: pointArrayList){
                 jsonObj = new JSONObject();
                 try {
                     jsonObj.put("id", String.valueOf(++i));
@@ -1753,63 +1819,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         assignID = 0;
     }
 
-    ProgressDialog pdDialog;
-    public void getRoute(long route_id){
-        pdDialog = new ProgressDialog(HomeActivity.this);
-        pdDialog.setTitle(getString(R.string.please_wait));
-        pdDialog.setMessage(getString(R.string.processing_data));
-        pdDialog.show();
-        pdDialog.setCancelable(false);
-        isDataLoading = true;
-        AndroidNetworking.post(ReqConst.SERVER_URL + "routedetails")
-                .addBodyParameter("route_id", String.valueOf(route_id))
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsJSONObject(new JSONObjectRequestListener() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // do anything with response
-                        Log.d("RESPONSE!!!", response.toString());
-                        pdDialog.dismiss();
-                        isDataLoading = false;
-                        try {
-                            String result = response.getString("result_code");
-                            if(result.equals("0")){
-                                traces0.clear();
-                                JSONArray dataArr = response.getJSONArray("points");
-                                for(int i=0; i<dataArr.length(); i++) {
-                                    JSONObject object = (JSONObject) dataArr.get(i);
-                                    RPoint point = new RPoint();
-                                    point.setIdx(object.getInt("id"));
-                                    point.setLat(Double.parseDouble(object.getString("lat")));
-                                    point.setLng(Double.parseDouble(object.getString("lng")));
-                                    point.setComment(object.getString("comment"));
-                                    point.setColor(object.getString("color"));
-                                    point.setTime(object.getString("time"));
-                                    point.setStatus(object.getString("status"));
-
-                                    traces0.add(point);
-                                }
-                                new ShowPolyLine().execute();
-
-                            }else {
-                                Log.d("Result===>", "Error");
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onError(ANError error) {
-                        // handle error
-                        Log.d("ERROR!!!", error.getErrorBody());
-                        pdDialog.dismiss();
-                        isDataLoading = false;
-                    }
-                });
-    }
-
     Polyline lastPolyline = null;
     long ii = 0;
 
@@ -1827,8 +1836,9 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                     @Override
                     public void run() {
                         ArrayList<RPoint> rPoints = new ArrayList<>();
-                        for(RPoint point:traces0){
+                        for(RPoint point:Commons.traces){
                             new Handler().postDelayed(new Runnable() {
+                                @RequiresApi(api = Build.VERSION_CODES.P)
                                 @Override
                                 public void run() {
                                     rPoints.add(point);
@@ -1864,10 +1874,14 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                                         lineOptions.color(rPoints.get(rPoints.size() - 1).getColor().length() > 0 ? Color.parseColor(rPoints.get(rPoints.size() - 1).getColor()) : Color.RED);
                                         lastPolyline = mMap.addPolyline(lineOptions);
                                         polylines.add(lastPolyline);
-                                        if(rPoints.size() == traces0.size() - ii){
+                                        if(rPoints.size() >= Commons.traces.size() - ii){
                                             ((LinearLayout)findViewById(R.id.loadingView)).setVisibility(View.GONE);
                                             ((View)findViewById(R.id.darkbg)).setVisibility(View.GONE);
                                         }
+                                    }
+                                    if(rPoints.size() >= Commons.traces.size()){
+                                        ((LinearLayout)findViewById(R.id.loadingView)).setVisibility(View.GONE);
+                                        ((View)findViewById(R.id.darkbg)).setVisibility(View.GONE);
                                     }
                                 }
                             }, 1);
@@ -1889,11 +1903,12 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
     }
 
-    private void uploadRoute() throws JSONException {
+    private void uploadRoutePoints(boolean end) throws JSONException {
         JsonFile jsonFile = new JsonFile();
         try {
             jsonFile.createFile();
-            jsonFile.writeToFile(createPointsJsonString());
+            String jsonstr = createPointsJsonString(Commons.routeTraces111);
+            jsonFile.writeToFile(jsonstr);
             Log.d("%%%%%%%%%%%%%%%%%%===>", jsonFile.readFile());
         } catch (IOException e) {
             e.printStackTrace();
@@ -1908,7 +1923,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
 
 //        progressBar.setVisibility(View.VISIBLE);
-        AndroidNetworking.upload(ReqConst.SERVER_URL + "updatereportdatainrealtime")
+        AndroidNetworking.upload(ReqConst.SERVER_URL + "rakuETMupdate")
                 .addMultipartFile("jsonfile", jsonFile.getFile())
                 .addMultipartParameter("route_id", String.valueOf(routeID))
                 .addMultipartParameter("assign_id", String.valueOf(assignID))
@@ -1920,38 +1935,100 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 .addMultipartParameter("duration", String.valueOf(duration))
                 .addMultipartParameter("speed", String.valueOf(speed))
                 .addMultipartParameter("distance", String.valueOf(totalDistance))
-                .addMultipartParameter("pulse", "0")
-                .addMultipartParameter("status", "report")
+                .addMultipartParameter("status", end ? "1" : "0")
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.P)
                     @Override
                     public void onResponse(JSONObject response) {
                         // do anything with response
-                        Log.d("XXXXXXXXXXX===>", response.toString());
+                        Log.d("XXXXXXXXXX JSON ===>", response.toString());
+                        xxx = false;
 //                        progressBar.setVisibility(View.GONE);
                         try {
                             String result = response.getString("result_code");
                             if(result.equals("0")){
-                                traces1.clear();
-                                clearLocationPoints(getString(R.string.location_points));
-                                EasyPreference.with(getApplicationContext()).addInt("network_delay", 0).save();
+                                Commons.routeTraces111.clear();
+                                EasyPreference.with(getApplicationContext()).addLong("last_loaded", currentTime).save();
+                                if(!end) Commons.routeTraces111.addAll(traces0);
+                                else if(IS8HOURS){
+                                    EasyPreference.with(getApplicationContext(), "backup").clearAll().save();
+                                    Commons.traces.clear();
+                                    openReport();
+                                }
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        traces0.clear();
                     }
 
                     @Override
                     public void onError(ANError error) {
                         progressBar.setVisibility(View.GONE);
+                        xxx = false;
+                        traces0.clear();
                     }
                 });
 
     }
 
-    private void uploadRealTimeRoute(String name, String description, String status, int end, boolean pulse) throws JSONException {
-        if(end == 0 || end == 2) progressBar.setVisibility(View.VISIBLE);
+//    private void uploadRoutePoints2(boolean end) throws JSONException {
+//
+//        routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
+//        assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
+//        totalDistance = EasyPreference.with(getApplicationContext(), "backup").getFloat("totalDistance", 0);
+//        speed = EasyPreference.with(getApplicationContext(), "backup").getFloat("speed", 0);
+//        duration = EasyPreference.with(getApplicationContext(), "backup").getLong("duration", 0);
+//        startedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("startedTime", 0);
+//        endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
+//
+////        progressBar.setVisibility(View.VISIBLE);
+//        AndroidNetworking.post(ReqConst.SERVER_URL + "ETMupdate")
+//                .addBodyParameter("points_json_data", createPointsJsonString())
+//                .addBodyParameter("route_id", String.valueOf(routeID))
+//                .addBodyParameter("assign_id", String.valueOf(assignID))
+//                .addBodyParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
+//                .addBodyParameter("name", "")
+//                .addBodyParameter("description", "")
+//                .addBodyParameter("start_time", String.valueOf(startedTime))
+//                .addBodyParameter("end_time", String.valueOf(endedTime))
+//                .addBodyParameter("duration", String.valueOf(duration))
+//                .addBodyParameter("speed", String.valueOf(speed))
+//                .addBodyParameter("distance", String.valueOf(totalDistance))
+//                .addBodyParameter("status", end ? "1" : "0")
+//                .setPriority(Priority.HIGH)
+//                .build()
+//                .getAsJSONObject(new JSONObjectRequestListener() {
+//                    @RequiresApi(api = Build.VERSION_CODES.P)
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        // do anything with response
+//                        Log.d("XXXXXXXXXX JSON ===>", response.toString());
+////                        progressBar.setVisibility(View.GONE);
+//                        try {
+//                            String result = response.getString("result_code");
+//                            if(result.equals("0")){
+//                                routeTraces111.clear();
+//                                clearLocationPoints(getString(R.string.location_points));
+//                                EasyPreference.with(getApplicationContext()).addLong("last_loaded", currentTime).save();
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(ANError error) {
+//                        progressBar.setVisibility(View.GONE);
+//                    }
+//                });
+//
+//    }
+
+    private void uploadStartOrEndRoute(String name, String description, int status) throws JSONException {
+        if(status == 0 || status == 2) progressBar.setVisibility(View.VISIBLE);
         routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
         assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
         totalDistance = EasyPreference.with(getApplicationContext(), "backup").getFloat("totalDistance", 0);
@@ -1959,7 +2036,8 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         duration = EasyPreference.with(getApplicationContext(), "backup").getLong("duration", 0);
         startedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("startedTime", 0);
         endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
-        AndroidNetworking.post(ReqConst.SERVER_URL + "startorendreporting")
+
+        AndroidNetworking.post(ReqConst.SERVER_URL + "rakuSOEreporting")
                 .addBodyParameter("route_id", String.valueOf(routeID))
                 .addBodyParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
                 .addBodyParameter("assign_id", String.valueOf(assignID))
@@ -1970,26 +2048,27 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 .addBodyParameter("duration", String.valueOf(duration))
                 .addBodyParameter("speed", String.valueOf(speed))
                 .addBodyParameter("distance", String.valueOf(totalDistance))
-                .addBodyParameter("pulse", pulse? "1":"0")
-                .addBodyParameter("status", status)
+                .addBodyParameter("status", String.valueOf(status))
 
-//                .addBodyParameter("lat", String.valueOf(latLng.latitude))
-//                .addBodyParameter("lng", String.valueOf(latLng.longitude))
-//                .addBodyParameter("comment", comment)
-//                .addBodyParameter("color", color)
+                .addBodyParameter("lat", String.valueOf(myLatLng.latitude))
+                .addBodyParameter("lng", String.valueOf(myLatLng.longitude))
+                .addBodyParameter("comment", "")
+                .addBodyParameter("color", "#" + getResources().getString(getColorFromSpeed(0)).substring(3, 9))
+                .addBodyParameter("tm", String.valueOf(new Date().getTime()))
 
                 .setPriority(Priority.HIGH)
                 .build()
                 .getAsJSONObject(new JSONObjectRequestListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.P)
                     @Override
                     public void onResponse(JSONObject response) {
                         // do anything with response
                         Log.d("/////////////////===>", response.toString());
-                        if(end == 0 || end == 2) progressBar.setVisibility(View.GONE);
+                        if(status == 0 || status == 2) progressBar.setVisibility(View.GONE);
                         try {
                             String result = response.getString("result_code");
                             if(result.equals("0")){
-                                if(end == 0) {
+                                if(status == 0) {
                                     Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).subscribeToLocationUpdates();
                                     clearPolylines();
                                     recordBtn.setBackgroundResource(R.drawable.red_round_fill);
@@ -2007,29 +2086,20 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                                     routeID = Long.parseLong(response.getString("route_id"));
                                     EasyPreference.with(getApplicationContext(), "backup").addLong("route_id", routeID).save();
 
-                                    drawRoute(myLatLng, true);
-
                                 }else {
                                     routeID = Long.parseLong(response.getString("route_id"));
                                     EasyPreference.with(getApplicationContext(), "backup").addLong("route_id", routeID).save();
-                                    if(end == 2) {
-//                                        Objects.requireNonNull(initialize.getForegroundOnlyLocationService()).unsubscribeToLocationUpdates();
-//                                        recordBtn.setBackgroundResource(R.drawable.primarydark_round_fill);
-//                                        recordBtn.setTextColor(Color.WHITE);
-//                                        recordBtn.setText(getString(R.string.start));
+                                    if(status == 2) {
                                         endedTime = new Date().getTime();
-//                                        isLocationRecording = false;
-                                        if(status.length() > 0)
-                                            showToast2(getString(R.string.successfully_sent));
-                                        else
-                                            showToast2(getString(R.string.saved));
+                                        showToast2(getString(R.string.saved));
                                         EasyPreference.with(getApplicationContext(), "backup").clearAll().save();
 
+                                        Commons.traces.clear();
                                         openReport();
                                     }
                                 }
                             }else {
-                                if(end == 2) showToast(getString(R.string.something_wrong));
+                                if(status == 2) showToast(getString(R.string.something_wrong));
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -2039,7 +2109,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                     @Override
                     public void onError(ANError error) {
                         Log.d("ERROR!!!", error.getErrorDetail());
-                        if(end == 2) {
+                        if(status == 2) {
                             progressBar.setVisibility(View.GONE);
                             showToast(getString(R.string.something_wrong));
                         }
@@ -2064,6 +2134,9 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         EditText nameBox = (EditText) view.findViewById(R.id.nameBox);
         nameBox.setFocusable(true);
         nameBox.requestFocus();
+
+        TextView noteBox = (TextView) view.findViewById(R.id.note);
+        noteBox.setVisibility(View.VISIBLE);
 
         Long currentTimeStamp = new Date().getTime();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd_hhmm");
@@ -2101,49 +2174,24 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
                 backup();
 
+                Commons.traces.clear();
+                Commons.routeTraces111.clear();
+                traces0.clear();
+
+                IS8HOURS = false;
+
                 try {
                     String name = nameBox.getText().toString();
-                    String description = descriptionBox.getText().toString();
-                    String status = "";
-                    if(checkBox.isChecked()){
-                        status = "report";
-                    }
-
-                    uploadRealTimeRoute(name, "", "report", 0, false);
+                    uploadStartOrEndRoute(name, "", 0);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-//                try {
-//                    shref = getSharedPreferences("ROUTE", Context.MODE_PRIVATE);
-//
-//                    Route route = new Route();
-//                    route.setMember_id(Commons.thisUser.getIdx());
-//                    route.setName(nameBox.getText().toString());
-//                    route.setDescription(descriptionBox.getText().toString());
-//                    route.setDuration(duration);
-//                    route.setDistance(totalDistance);
-//                    route.setSpeed(speed);
-//                    route.setStart_time(String.valueOf(startedTime));
-//                    route.setEnd_time(String.valueOf(endedTime));
-//
-//                    for(RPoint point:traces){
-//                        point.setRoute_id(route.getIdx());
-//                    }
-//
-//                    Log.d("TRACES COUNT!!!", String.valueOf(traces.size()));
-//
-//                    uploadRoute(route);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
 
                 dialog.dismiss();
             }
         });
 
         ImageView cancelButton = (ImageView)view.findViewById(R.id.btn_cancel);
-//        cancelButton.setVisibility(View.GONE);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2179,6 +2227,85 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         dialog.getWindow().setAttributes(layoutParams);
 //        dialog.setCancelable(false);
     }
+
+    ///////// Test ///////////////////////////////////////////////////////////////////////////////
+    private void uploadRealTimeRoute(RPoint rPoint, boolean pulse) throws JSONException {
+
+        routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
+        assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
+        totalDistance = EasyPreference.with(getApplicationContext(), "backup").getFloat("totalDistance", 0);
+        speed = EasyPreference.with(getApplicationContext(), "backup").getFloat("speed", 0);
+        duration = EasyPreference.with(getApplicationContext(), "backup").getLong("duration", 0);
+        startedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("startedTime", 0);
+        endedTime = EasyPreference.with(getApplicationContext(), "backup").getLong("endedTime", 0);
+
+        AndroidNetworking.post(ReqConst.SERVER_URL + "upRTRoute")
+                .addBodyParameter("route_id", String.valueOf(routeID))
+                .addBodyParameter("assign_id", String.valueOf(assignID))
+                .addBodyParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
+                .addBodyParameter("name", "")
+                .addBodyParameter("description", "")
+                .addBodyParameter("start_time", String.valueOf(startedTime))
+                .addBodyParameter("end_time", String.valueOf(endedTime))
+                .addBodyParameter("duration", String.valueOf(duration))
+                .addBodyParameter("speed", String.valueOf(speed))
+                .addBodyParameter("distance", String.valueOf(totalDistance))
+                .addBodyParameter("pulse", pulse ? "1" : "0")
+                .addBodyParameter("status", "report")
+
+                .addBodyParameter("lat", String.valueOf(rPoint.getLat()))
+                .addBodyParameter("lng", String.valueOf(rPoint.getLng()))
+                .addBodyParameter("comment", rPoint.getComment())
+                .addBodyParameter("color", rPoint.getColor())
+                .addBodyParameter("tm", rPoint.getTime())
+
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.P)
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // do anything with response
+                        Log.d("XXXXXXXXXXX RT ===>", response.toString());
+                        Log.d("Data Usage===>", android.net.TrafficStats.getMobileRxBytes()+"Bytes");
+                        try {
+                            String result = response.getString("result_code");
+                            if(result.equals("0")){
+                                Commons.routeTraces111.clear();
+                                clearLocationPoints(getString(R.string.location_points));
+                                EasyPreference.with(getApplicationContext()).addInt("network_delay", 0).save();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError error) {
+                        Log.d("ERROR!!!", error.getLocalizedMessage());
+                    }
+                });
+
+    }
+
+    class DurTime {
+        int hours = 0;
+        int minutes = 0;
+
+        public DurTime(int hours, int minutes) {
+            this.hours = hours;
+            this.minutes = minutes;
+        }
+
+        public int getHours() {
+            return hours;
+        }
+
+        public int getMinutes() {
+            return minutes;
+        }
+    }
+
 
 }
 

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">らくポス</string>
     <string name="location_points">location_points</string>
+    <string name="total_location_points">total_location_points</string>
     <string name="forgot_password_title">パスワードをお忘れですか</string>
     <string name="forgot_password_question">パスワードをお忘れですか？</string>
     <string name="forgot_password_text">パスワードのリセット\nリンクをメールに送信します。</string>
@@ -95,7 +96,7 @@
 
     <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
     <string name="no_location_text">No current location</string>
-    <string name="hint">このアプリでは フォアグラウンドとバックグラウンドでの新聞配達員のリアルタイム位置、作業経路、時間、速度、距離などの追跡と推定 を可能にするために、現在地のデータが収集されます。アプリを閉じているときや、使用していないときにも収集されます。</string>
+    <string name="hint">このアプリでは フォアグラウンドとバックグラウンドでのユーザーのリアルタイム位置、作業経路、時間、速度、距離などの追跡と推定 を可能にするために、現在地のデータが収集されます。アプリを閉じているときや、使用していないときにも収集されます。</string>
     <string name="distribution_area">配布エリア</string>
     <string name="no_area">エリアが見つかりません。。。</string>
     <string name="cumulative_distance">累計距離</string>

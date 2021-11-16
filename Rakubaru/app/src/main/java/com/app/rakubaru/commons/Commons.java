@@ -28,4 +28,6 @@ public class Commons {
 
     public static Area area = null;
 
+    public static ArrayList<RPoint> traces = new ArrayList<>();
+    public static ArrayList<RPoint> routeTraces111 = new ArrayList<>();
 }

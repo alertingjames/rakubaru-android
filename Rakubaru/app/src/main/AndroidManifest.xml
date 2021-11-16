@@ -38,7 +38,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup,icon,theme,label">
-        <activity android:name=".main.TestHomeActivity"></activity>
+        <activity android:name=".main.TestHomeActivity"/>
         <activity
             android:name=".main.AreasActivity"
             android:screenOrientation="portrait"

@@ -1,11 +1,20 @@
 package com.app.rakubaru.service
 
+import android.Manifest
+import android.app.Activity
 import android.content.*
 import android.location.Location
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.app.rakubaru.commons.Commons
+import com.app.rakubaru.main.LoginActivity
+import com.app.rakubaru.models.RPoint
 import com.google.android.gms.maps.model.LatLng
 
 public class ForegroundServiceInitialize() {
@@ -62,6 +71,32 @@ public class ForegroundServiceInitialize() {
 //                Commons.homeActivity.refreshMyMarker(Commons.homeActivity.myLatLng)
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun requestBackgroundPermission(activity:Activity) {
+        if(ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            val backPermList = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            AlertDialog.Builder(activity)
+                .setTitle("バックグラウンドロケーション許可")
+                .setMessage("バックグラウンドで位置情報の更新を取得するための位置情報の許可を許可します。")
+                .setPositiveButton("許可する") { _, _ ->
+                    requestPermissions(
+                        activity,
+                        backPermList,
+                        34
+                    )
+                }
+                .setNegativeButton("キャンセル") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
+        }
+    }
+
+    fun notify8hoursExceed() {
+        foregroundOnlyLocationService?.makeWorkExceedNotification()
     }
 
 }

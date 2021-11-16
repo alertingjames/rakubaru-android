@@ -1,11 +1,17 @@
 package com.app.rakubaru.main;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -15,6 +21,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.common.Priority;
@@ -31,6 +41,7 @@ import com.wang.avi.AVLoadingIndicatorView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class LoginActivity extends BaseActivity {
@@ -102,6 +113,23 @@ public class LoginActivity extends BaseActivity {
         boolean hint_read = EasyPreference.with(getApplicationContext(), "action_info").getBoolean("hint_read", false);
         if(!hint_read){
             showAlertDialogForHint(LoginActivity.this);
+        }else {
+            checkPermissions(LOC_PER);
+            checkPermissions(CAM_PER);
+            if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                new AlertDialog.Builder(LoginActivity.this)
+                        .setTitle("バックグラウンドロケーション許可")
+                        .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                                "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                openSettings();
+                            }
+                        })
+                        .setNegativeButton("キャンセル", null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
         }
 
         EasyPreference.with(getApplicationContext(), "backup").clearAll().save();
@@ -209,10 +237,26 @@ public class LoginActivity extends BaseActivity {
         dialog.show();
         TextView okButton = (TextView)view.findViewById(R.id.btn_ok);
         okButton.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.P)
             @Override
             public void onClick(View v) {
                 EasyPreference.with(getApplicationContext(), "action_info").addBoolean("hint_read", true).save();
                 checkPermissions(LOC_PER);
+                checkPermissions(CAM_PER);
+                if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                    new AlertDialog.Builder(LoginActivity.this)
+                            .setTitle("バックグラウンドロケーション許可")
+                            .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                                    "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                            .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    openSettings();
+                                }
+                            })
+                            .setNegativeButton("キャンセル", null)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }
                 dialog.dismiss();
             }
         });

@@ -78,6 +78,17 @@
                 android:textColor="@color/colorPrimaryDark" />
 
             <TextView
+                android:id="@+id/note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:textColor="@color/text"
+                android:text="※連続で記録できるのは、最大8時間です。"/>
+
+            <TextView
                 android:id="@+id/btn_ok"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

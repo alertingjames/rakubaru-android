@@ -133,16 +133,15 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
             android:background="@drawable/gray_stroke_rect"
-            android:layout_gravity="center_vertical"
+            android:layout_marginTop="10dp"
             android:padding="3dp"
             android:src="@drawable/ic_menu"
             android:onClick="openMenu"
@@ -152,13 +151,16 @@
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginTop="80dp"
             android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/gray_stroke_rect"
-            android:layout_gravity="center_vertical|right"
+            android:layout_gravity="right"
             android:padding="8dp"
             android:src="@drawable/setting"
             android:onClick="openSettings"
             tools:ignore="OnClick"
+            android:visibility="visible"
             app:tint="@color/text" />
 
     </FrameLayout>
@@ -353,14 +355,49 @@
             android:textColor="@color/text"/>
     </LinearLayout>
 
-    <com.wang.avi.AVLoadingIndicatorView
-        android:id="@+id/loading_bar"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="center"
+    <LinearLayout
         android:visibility="gone"
-        app:indicator="LineSpinFadeLoader"
-        app:indicator_color="#F53700" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/test0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:textColor="@color/text"
+            android:padding="3dp"
+            android:textSize="12sp"
+            android:layout_gravity="center_horizontal"/>
+        <TextView
+            android:id="@+id/test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:textColor="@color/text"
+            android:padding="3dp"
+            android:textSize="12sp"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progress_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        android:background="#6A000000"
+        android:visibility="gone"
+        android:clickable="true">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:indeterminateTint="@color/yellow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"/>
+
+    </FrameLayout>
 
 </FrameLayout>
 
