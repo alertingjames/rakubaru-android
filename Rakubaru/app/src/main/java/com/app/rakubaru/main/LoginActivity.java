@@ -120,7 +120,7 @@ public class LoginActivity extends BaseActivity {
                 new AlertDialog.Builder(LoginActivity.this)
                         .setTitle("バックグラウンドロケーション許可")
                         .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                                "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                                "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
                         .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 openSettings();
@@ -247,7 +247,7 @@ public class LoginActivity extends BaseActivity {
                     new AlertDialog.Builder(LoginActivity.this)
                             .setTitle("バックグラウンドロケーション許可")
                             .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                                    "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                                    "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
                             .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     openSettings();

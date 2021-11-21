@@ -91,9 +91,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -220,7 +227,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
             new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
                     .setTitle("バックグラウンドロケーション許可")
                     .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                            "また、ルートをファイルとして安全に保存するには、保存権限を「すべてのファイルの管理を許可する」に設定します。")
+                            "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
                     .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             openSettings();
@@ -229,23 +236,6 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                     .setNegativeButton("キャンセル", null)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
-                        .setTitle("ファイルアクセス許可")
-                        .setMessage("すべてのファイルへのアクセスを許可してください。")
-                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                                startActivity(intent);
-                            }
-                        })
-                        .setNegativeButton("キャンセル", null)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-            }
         }
 
         isLocationRecording = false;
@@ -1904,15 +1894,12 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     }
 
     private void uploadRoutePoints(boolean end) throws JSONException {
-        JsonFile jsonFile = new JsonFile();
-        try {
-            jsonFile.createFile();
-            String jsonstr = createPointsJsonString(Commons.routeTraces111);
-            jsonFile.writeToFile(jsonstr);
-            Log.d("%%%%%%%%%%%%%%%%%%===>", jsonFile.readFile());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        String jsonstr = createPointsJsonString(Commons.routeTraces111);
+        WriteData(jsonstr);
+
+        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS + "/Rakubaru/");
+        final File file = new File(path, "traces1.txt");
 
         routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
         assignID = EasyPreference.with(getApplicationContext(), "backup").getLong("assign_id", 0);
@@ -1924,7 +1911,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
 //        progressBar.setVisibility(View.VISIBLE);
         AndroidNetworking.upload(ReqConst.SERVER_URL + "rakuETMupdate")
-                .addMultipartFile("jsonfile", jsonFile.getFile())
+                .addMultipartFile("jsonfile", file)
                 .addMultipartParameter("route_id", String.valueOf(routeID))
                 .addMultipartParameter("assign_id", String.valueOf(assignID))
                 .addMultipartParameter("member_id", String.valueOf(Commons.thisUser.getIdx()))
@@ -2287,6 +2274,28 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
                 });
 
     }
+
+    public void WriteData(String jsonStr){
+        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS + "/Rakubaru/");
+        // Make sure the path directory exists.
+        if (!path.exists()) {
+            path.mkdirs();
+        } // Make sure the path directory exists.
+        final File file = new File(path, "traces1.txt");
+        // Save your stream, don't forget to flush() it before closing it.
+        try {
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(jsonStr);
+            myOutWriter.close();
+            fOut.flush();
+            fOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("Exception", "File write failed: " + e.getMessage());
+        }
+    }
+
 
     class DurTime {
         int hours = 0;
