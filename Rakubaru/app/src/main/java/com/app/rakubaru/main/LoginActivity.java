@@ -20,6 +20,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -49,6 +51,8 @@ public class LoginActivity extends BaseActivity {
     TextView loginBtn;
     EditText emailBox, passwordBox;
     AVLoadingIndicatorView progressBar;
+    LinearLayout alertDialogBox;
+    FrameLayout background;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +64,9 @@ public class LoginActivity extends BaseActivity {
         loginBtn = (TextView)findViewById(R.id.loginBtn);
         emailBox = (EditText)findViewById(R.id.emailBox);
         passwordBox = (EditText)findViewById(R.id.passwordBox);
+
+        alertDialogBox = (LinearLayout)findViewById(R.id.alertDialog);
+        background = (FrameLayout)findViewById(R.id.background);
 
         emailBox.setFocusable(true);
         emailBox.requestFocus();
@@ -112,23 +119,27 @@ public class LoginActivity extends BaseActivity {
 
         boolean hint_read = EasyPreference.with(getApplicationContext(), "action_info").getBoolean("hint_read", false);
         if(!hint_read){
-            showAlertDialogForHint(LoginActivity.this);
+            showAlertDialogForHint();
         }else {
             checkPermissions(LOC_PER);
             checkPermissions(CAM_PER);
-            if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
-                new AlertDialog.Builder(LoginActivity.this)
-                        .setTitle("バックグラウンドロケーション許可")
-                        .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                                "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
-                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                openSettings();
-                            }
-                        })
-                        .setNegativeButton("キャンセル", null)
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+            String myVersion = android.os.Build.VERSION.RELEASE;
+            Log.i("OS version", myVersion);
+            if(Integer.parseInt(myVersion.split("\\.")[0]) > 10){
+                if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                    new AlertDialog.Builder(LoginActivity.this)
+                            .setTitle("バックグラウンドロケーション許可")
+                            .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                                    "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
+                            .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    openSettings();
+                                }
+                            })
+                            .setNegativeButton("キャンセル", null)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }
             }
         }
 
@@ -226,68 +237,35 @@ public class LoginActivity extends BaseActivity {
                 });
     }
 
-    public void showAlertDialogForHint(Activity activity){
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(activity);
-        LayoutInflater layoutInflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = layoutInflater.inflate(R.layout.layout_alert_hint, null);
-        builder.setView(view);
-        final androidx.appcompat.app.AlertDialog dialog = builder.create();
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
-        dialog.show();
-        TextView okButton = (TextView)view.findViewById(R.id.btn_ok);
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.P)
-            @Override
-            public void onClick(View v) {
-                EasyPreference.with(getApplicationContext(), "action_info").addBoolean("hint_read", true).save();
-                checkPermissions(LOC_PER);
-                checkPermissions(CAM_PER);
-                if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
-                    new AlertDialog.Builder(LoginActivity.this)
-                            .setTitle("バックグラウンドロケーション許可")
-                            .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                                    "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
-                            .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    openSettings();
-                                }
-                            })
-                            .setNegativeButton("キャンセル", null)
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
-                }
-                dialog.dismiss();
+    public void showAlertDialogForHint(){
+        alertDialogBox.setVisibility(View.VISIBLE);
+        background.setVisibility(View.VISIBLE);
+    }
+
+    public void OK(View view){
+        EasyPreference.with(getApplicationContext(), "action_info").addBoolean("hint_read", true).save();
+        checkPermissions(LOC_PER);
+        checkPermissions(CAM_PER);
+        String myVersion = android.os.Build.VERSION.RELEASE;
+        Log.i("OS version", myVersion);
+        if(Integer.parseInt(myVersion.split("\\.")[0]) > 10){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(LoginActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                new AlertDialog.Builder(LoginActivity.this)
+                        .setTitle("バックグラウンドロケーション許可")
+                        .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                                "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
+                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                openSettings();
+                            }
+                        })
+                        .setNegativeButton("キャンセル", null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
             }
-        });
-
-        // Get screen width and height in pixels
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        // The absolute width of the available display size in pixels.
-        int displayWidth = displayMetrics.widthPixels;
-        // The absolute height of the available display size in pixels.
-        int displayHeight = displayMetrics.heightPixels;
-
-        // Initialize a new window manager layout parameters
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-
-        // Copy the alert dialog window attributes to new layout parameter instance
-        layoutParams.copyFrom(dialog.getWindow().getAttributes());
-
-        // Set alert dialog width equal to screen width 80%
-        int dialogWindowWidth = (int) (displayWidth * 0.95f);
-        // Set alert dialog height equal to screen height 80%
-        //    int dialogWindowHeight = (int) (displayHeight * 0.8f);
-
-        // Set the width and height for the layout parameters
-        // This will bet the width and height of alert dialog
-        layoutParams.width = dialogWindowWidth;
-        //      layoutParams.height = dialogWindowHeight;
-
-        // Apply the newly created layout parameters to the alert dialog window
-        dialog.getWindow().setAttributes(layoutParams);
-        dialog.setCancelable(false);
+        }
+        alertDialogBox.setVisibility(View.GONE);
+        background.setVisibility(View.GONE);
     }
 
     public void openHelp(View view) {

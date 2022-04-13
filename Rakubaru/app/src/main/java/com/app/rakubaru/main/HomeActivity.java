@@ -223,19 +223,23 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         checkPermissions(CAM_PER);
         grantPermissions();
 
-        if(ActivityCompat.shouldShowRequestPermissionRationale(HomeActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
-            new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
-                    .setTitle("バックグラウンドロケーション許可")
-                    .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
-                            "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
-                    .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            openSettings();
-                        }
-                    })
-                    .setNegativeButton("キャンセル", null)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+        String myVersion = android.os.Build.VERSION.RELEASE;
+        Log.i("OS version", myVersion);
+        if(Integer.parseInt(myVersion.split("\\.")[0]) > 10){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(HomeActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                new androidx.appcompat.app.AlertDialog.Builder(HomeActivity.this)
+                        .setTitle("バックグラウンドロケーション許可")
+                        .setMessage("バックグラウンドで位置情報を取得するには、位置情報のアクセス許可を「常に許可」に設定します。\n" +
+                                "また、ルートをファイルとして安全に保存するには、保存権限を「許可する」に設定します。")
+                        .setPositiveButton("許可する", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                openSettings();
+                            }
+                        })
+                        .setNegativeButton("キャンセル", null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
         }
 
         isLocationRecording = false;
@@ -1125,7 +1129,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
 
                 backup();
 
-                if(getDur(duration).getHours() >= 8) {
+                if(getDur(duration).getHours() >= 12) {
                     finalizeReport(true);
                     return;
                 }
@@ -1898,7 +1902,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
         String jsonstr = createPointsJsonString(Commons.routeTraces111);
         WriteData(jsonstr);
 
-        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS + "/Rakubaru/");
+        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         final File file = new File(path, "traces1.txt");
 
         routeID = EasyPreference.with(getApplicationContext(), "backup").getLong("route_id", 0);
@@ -2276,7 +2280,7 @@ public class HomeActivity extends BaseActivity implements OnMapReadyCallback, Vi
     }
 
     public void WriteData(String jsonStr){
-        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS + "/Rakubaru/");
+        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         // Make sure the path directory exists.
         if (!path.exists()) {
             path.mkdirs();

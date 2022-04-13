@@ -86,7 +86,7 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:textColor="@color/text"
-                android:text="※連続で記録できるのは、最大8時間です。"/>
+                android:text="※連続で記録できるのは、最大12時間です。"/>
 
             <TextView
                 android:id="@+id/btn_ok"

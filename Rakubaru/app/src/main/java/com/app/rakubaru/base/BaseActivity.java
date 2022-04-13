@@ -42,10 +42,10 @@ import android.widget.Toast;
 
 import com.algorithmia.TypeToken;
 import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.BuildConfig;
 import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
-import com.app.rakubaru.BuildConfig;
 import com.app.rakubaru.R;
 import com.app.rakubaru.commons.Commons;
 import com.app.rakubaru.commons.ReqConst;
@@ -624,16 +624,20 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void openSettings(){
-        Intent intent = new Intent();
-        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts(
-                "package",
-                BuildConfig.APPLICATION_ID,
-                null
-        );
-        intent.setData(uri);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        String myVersion = android.os.Build.VERSION.RELEASE;
+        Log.i("OS version", myVersion);
+        if(Integer.parseInt(myVersion.split("\\.")[0]) > 10){
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            Uri uri = Uri.fromParts(
+                    "package",
+                    BuildConfig.APPLICATION_ID,
+                    null
+            );
+            intent.setData(uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 
 
